@@ -1,0 +1,253 @@
+# Copyright 2019-2022 DADoES, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License in the root directory in the "LICENSE" file or at:
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+schemas:
+  RandomChoice:
+    inputs:
+    - name: List_of_Choices
+      description: The list of choices to choose from
+      validation:
+        oneOf:
+          - type: array
+          - numLinks: one
+    - name: Number_of_Choices
+      description: The number of choices make
+      default: 1
+      validation:
+        oneOf:
+          - type: integer
+          - numLinks: one
+    - name: Unique_Choices
+      description: Determines if every choice needs to be unique
+      select:
+      - 'True'
+      - 'False'
+      default: 'True'
+    outputs:
+    - name: Choices
+      description: The choices made
+    tooltip: Selects the specified number of choices from a list
+    category: Common
+    subcategory: Random
+    color: "#1FDBA3"
+
+  RandomNormal:
+    inputs:
+    - name: loc
+      default: 0.0
+      description: Mean of the distribution
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: scale
+      default: 1.0
+      description: Standard deviation of the distribution
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: size
+      default: null
+      description: Output shape, e.g., (m, n, k) will draw m * n * k samples and a single value is drawn for None (default)
+        if loc and scale are both scalars, otherwise, np.broadcast(loc, scale).size samples are drawn
+      validation:
+        oneOf:
+          - oneOf:
+              - type: "null"
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+              - type: string
+                maxLength: 0
+                minLength: 0
+            errorMessage: Input must be either an integer, an array of integers, or an empty string
+          - numLinks: one
+    outputs:
+    - name: out
+      description: Drawn samples from the parameterized normal distribution
+    tooltip: Draw random samples from a normal (Gaussian) distribution with mean 'loc'
+      and standard deviation 'scale' (see numpy.random.normal for details)
+    category: Common
+    subcategory: Random
+    color: "#1FDBA3"
+
+  RandomRandint:
+    inputs:
+    - name: low
+      description: Lower boundary of the interval (inclusive)
+      validation:
+        oneOf:
+          - oneOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+            errorMessage: Input must be either an integer or an array of integers
+          - numLinks: one
+    - name: high
+      description: Upper boundary of the interval (exclusive)
+      validation:
+        oneOf:
+          - oneOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+            errorMessage: Input must be either an integer or an array of integers
+          - numLinks: one
+    - name: size
+      default: null
+      description: Output shape, e.g., [m, n, k] will draw m * n * k samples and a single value for None (default)
+      validation:
+        oneOf:
+          - oneOf:
+              - type: "null"
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+              - type: string
+                maxLength: 0
+                minLength: 0
+            errorMessage: Input must be either an integer, an array of integers, or an empty string
+          - numLinks: one
+    outputs:
+    - name: out
+      description: Drawn samples from the interval
+    tooltip: Generate random integers from low (inclusive) to high (exclusive), see numpy.random.randint for details
+    category: Common
+    subcategory: Random
+    color: "#1FDBA3"
+
+  RandomTriangular:
+    inputs:
+    - name: left
+      description: Lower limit
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: mode
+      description: The value where the peak of the distribution occurs
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: right
+      description: Upper limit
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: size
+      default: null
+      description: Output shape, e.g., (m, n, k), will draw m * n * k samples and a sigle value is drawn for None (default)
+        if left, mode, and right are all scalars, otherwise, np.broadcast(left, mode, right).size samples are drawn
+      validation:
+        oneOf:
+          - oneOf:
+              - type: "null"
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+              - type: string
+                maxLength: 0
+                minLength: 0
+            errorMessage: Input must be either an integer, an array of integers, or an empty string
+          - numLinks: one
+    outputs:
+    - name: out
+      description: Drawn samples from the parameterized triangular distribution
+    tooltip: Draw random samples from a triangular distribution over the closed interval [left, right], see numpy.random.triangular for details.
+    category: Common
+    subcategory: Random
+    color: "#1FDBA3"
+
+  RandomUniform:
+    inputs:
+    - name: low
+      default: 0.0
+      description: Lower boundary of the interval (inclusive)
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: high
+      default: 1.0
+      description: Upper boundary of the interval (exclusive)
+      validation:
+        oneOf:
+          - oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+            errorMessage: Input must be either a number or an array of numbers
+          - numLinks: one
+    - name: size
+      default: null
+      description: Output shape, e.g, [m, n, k], will draw m * n * k samples and a single value is drawn for None (default)
+        if low and high are both scalars, otherwise np.broadcast(low, high).size samples are drawn
+      validation:
+        oneOf:
+          - oneOf:
+              - type: "null"
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+              - type: string
+                maxLength: 0
+                minLength: 0
+            errorMessage: Input must be either an integer, an array of integers, or an empty string
+          - numLinks: one
+    outputs:
+    - name: out
+      description: Drawn samples from the parameterized uniform distribution
+    tooltip: Draw random samples from a uniform distribution over the half-open interval [low, high), see numpy.random.uniform for details
+    category: Common
+    subcategory: Random
+    color: "#1FDBA3"

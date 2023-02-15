@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+# Copyright 2019-2022 DADoES, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License in the root directory in the "LICENSE" file or at:
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import argparse
+import os
+import sys
+import subprocess
+from anatools.lib.channel import Channel, find_channelfile
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--channel', default=None)
+parser.add_argument('--graph')
+parser.add_argument('--loglevel', default="ERROR")
+parser.add_argument('--logfile', default=None)
+parser.add_argument('--seed', type=int)
+parser.add_argument('--interp_num', type=int)
+parser.add_argument('--preview', action="store_true")
+parser.add_argument('--output')
+parser.add_argument('--data')
+args = parser.parse_args()
+
+# Configure initial logging. Needed so errors in Channel class are displayed. Logging level
+# may get overridden later
+Channel.configure_logging(loglevel=args.loglevel, logfile=args.logfile, logfile_mode="w")
+
+# get channel file name
+if args.channel is None: args.channel = find_channelfile()
+if args.channel is None: print('No channel file was specified or found.'); sys.exit(1)
+channel_file = args.channel
+if os.path.splitext(channel_file)[1] == '':
+    channel_file = channel_file + ".yml"
+
+channel = Channel(channel_file)
+channel.process_args(args)
+
+if channel.type == "blender":
+    command = (
+        f'blender --background --python {channel.ana_package_dir}/lib/blender_main.py -- \\\n' +
+        f'--channel {channel_file} \\\n' +
+        f'--graph {channel.execution_flags["--graph"]} \\\n' +
+        f'--loglevel {channel.execution_flags["--loglevel"]} \\\n' +
+        f'--interp_num {channel.execution_flags["--interp_num"]} \\\n' +
+        f'--output {channel.execution_flags["--output"]} \\\n' +
+        f'--data {channel.execution_flags["--data"]}'
+    )
+    if channel.execution_flags["--seed"] is not None:
+        command = command + f' \\\n--seed {channel.execution_flags["--seed"]}'
+    if channel.execution_flags["--preview"]:
+        command = command + ' \\\n--preview'
+    if channel.execution_flags["--logfile"] is not None:
+        command = command + f' \\\n--logfile {channel.execution_flags["--logfile"]}'
+elif channel.type == "python":
+    command = (
+        f'python {channel.ana_package_dir}/lib/python_main.py \\\n' +
+        f'--channel {channel.execution_flags["--channel"]} \\\n' +
+        f'--graph {channel.execution_flags["--graph"]} \\\n' +
+        f'--loglevel {channel.execution_flags["--loglevel"]} \\\n' +
+        f'--interp_num {channel.execution_flags["--interp_num"]} \\\n' +
+        f'--output {channel.execution_flags["--output"]} \\\n' +
+        f'--data {channel.execution_flags["--data"]}'
+    )
+    if channel.execution_flags["--seed"] is not None:
+        command = command + f' \\\n--seed {channel.execution_flags["--seed"]}'
+    if channel.execution_flags["--preview"]:
+        command = command + ' \\\n--preview'
+    if channel.execution_flags["--logfile"] is not None:
+        command = command + f' \\\n--logfile {channel.execution_flags["--logfile"]}'
+elif channel.type == "omniverse":
+    command = (
+        f'/startup.sh --ext-folder kit-exts/exts --enable ana.interpreter \\\n' +
+        f'--/channel={channel.execution_flags["--channel"]} \\\n' +
+        f'--/graph={channel.execution_flags["--graph"]} \\\n' +
+        f'--/interp_num={channel.execution_flags["--interp_num"]} \\\n' +
+        f'--/output={channel.execution_flags["--output"]} \\\n' +
+        f'--/loglevel={channel.execution_flags["--loglevel"]} \\\n' +
+        f'--/data={channel.execution_flags["--data"]}'
+    )
+    if channel.execution_flags["--seed"] is not None:
+        command = command + f' \\\n--/seed={channel.execution_flags["--seed"]}'
+    if channel.execution_flags["--preview"]:
+        command = command + f' \\\n--/preview={channel.execution_flags["--preview"]}'
+    if channel.execution_flags["--logfile"] is not None:
+        command = command + f' \\\n--/logfile={channel.execution_flags["--logfile"]}'
+
+p = subprocess.run(command, shell=True)
+exit(p.returncode)

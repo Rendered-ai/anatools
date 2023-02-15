@@ -1,0 +1,5 @@
+docker
+numpy
+pillow
+pyyaml
+requests

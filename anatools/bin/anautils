@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+# Copyright 2019-2022 DADoES, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License in the root directory in the "LICENSE" file or at:
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import os
+import sys
+import argparse
+import json
+from anatools.lib.channel import Channel, find_channelfile
+
+
+def print_color(text, color):
+    r,g,b = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
+    coloresc = '\033[{};2;{};{};{}m'.format(38, r, g, b)
+    resetesc = '\033[0m'
+    print(coloresc + text + resetesc)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--channel', type=str, default=None)
+parser.add_argument("--mode", type=str, default="schema")
+parser.add_argument("--output", type=str, default=".")
+args = parser.parse_args()
+
+# create the channel
+if args.channel is None: args.channel = find_channelfile()
+if args.channel is None: print('No channel file was specified or found.'); sys.exit(1)
+if os.path.splitext(args.channel)[1] == '': args.channel = args.channel + ".yml"
+if not os.path.exists(args.output): print(f"No output directory {args.output} exists."); sys.exit(1)
+channel = Channel(args.channel)
+
+if args.mode == 'schema':
+    full_conf = channel.schemas.copy()
+    node_list = []
+    for item_name in full_conf:
+        # don't include VolumeFile node in node_data.yml 
+        if item_name != "VolumeFile":
+            full_conf[item_name]["name"]=item_name
+            node_list.append(full_conf[item_name])
+
+    # write the schema to the node_data.yml file
+    with open(os.path.join(args.output, 'node_data.yml'), 'w') as outfile:
+        json.dump(node_list, outfile, indent=2 )
+
+    # display the node menu to the user
+    print('The Node Menu for this Channel will be as follows on the Rendered.ai Platform:\n')
+    menu = {}
+    for node in node_list:
+        if 'category' not in node: node['category'] = 'undefined'
+        if 'subcategory' not in node: node['subcategory'] = 'undefined'
+        if 'color' not in node: node['color'] = '000000'
+        if node['category'] not in menu: menu[node['category']] = {}
+        if node['subcategory'] not in menu[node['category']]: menu[node['category']][node['subcategory']] = []
+        menu[node['category']][node['subcategory']].append({'name': node['name'], 'color': node['color']})
+    for cat in menu:
+        print(cat)
+        for subcat in menu[cat]:
+            print(f'  {subcat}')
+            for node in menu[cat][subcat]:
+                print_color(f'    - {node["name"]}', node['color'].replace('#','') )
+
+if args.mode == 'docs':
+    filename = os.path.join(args.output, f'{channel.name}.md')
+    print(f"Writing starter documentation to {filename}...", end='')
+    with open(filename, 'w') as docfile:
+        # title
+        docfile.write(f"# {channel.name} Channel\n*Description of the channel.*\n\n")
+        # graph requirements
+        docfile.write("## Graph Requirements\n*Describe any requirements needed for running a graph, for example nodes that need to be connected in a certain order.*\n\n")
+        # nodes table
+        docfile.write("## Channel Nodes\nThe following nodes are available in the channel:\n")
+        docfile.write("| Name | Inputs | Outputs | Description |\n|---|---|---|---|\n")
+        for node in channel.schemas:
+            inputs = ""
+            for i in range(len(channel.schemas[node]['inputs'])):
+                inputs += f"{channel.schemas[node]['inputs'][i]['name']}"
+                if i < len(channel.schemas[node]['inputs'])-1: inputs += "<br />"
+            if inputs == "": inputs = "-"
+            outputs = ""
+            for i in range(len(channel.schemas[node]['outputs'])):
+                outputs += f"{channel.schemas[node]['outputs'][i]['name']}"
+                if i < len(channel.schemas[node]['outputs'])-1: outputs += "<br />"
+            if outputs == "": outputs = "-"
+            description = "-"
+            if 'tooltip' in channel.schemas[node]: description = channel.schemas[node]['tooltip']
+            docfile.write(f"| {node} | {inputs} | {outputs} | {description} |\n")
+    print("done.")
