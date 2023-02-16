@@ -157,5 +157,5 @@ class client:
     from .volumes       import get_volumes, get_managed_volumes, create_managed_volume, edit_managed_volume, delete_managed_volume, add_volume_access, remove_volume_access, get_volume_data, download_volume_data, upload_volume_data, delete_volume_data, mount_volumes
     from .analytics     import get_analytics, get_analytics_types, create_analytics, delete_analytics
     from .annotations   import get_annotations, get_annotation_formats, get_annotation_maps, create_annotation, download_annotation, delete_annotation , get_managed_maps, create_managed_map, edit_managed_map, delete_managed_map, add_map_organization, remove_map_organization
-    from .gan           import get_gan_models, get_gan_dataset, create_gan_dataset, delete_gan_dataset, create_managed_gan, delete_gan_model, add_gan_access, remove_gan_access, get_managed_gans, edit_managed_gan, delete_managed_gan, add_gan_organization, remove_gan_organization
+    from .gan           import get_gan_models, get_gan_dataset, create_gan_dataset, delete_gan_dataset, create_managed_gan, delete_gan_model, get_managed_gans, edit_managed_gan, delete_managed_gan, add_gan_organization, remove_gan_organization
     from .umap          import get_umap, create_umap, delete_umap

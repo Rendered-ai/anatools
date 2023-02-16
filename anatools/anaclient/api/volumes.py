@@ -141,7 +141,7 @@ def editManagedVolume(self, volumeId, name=None, description=None):
     return self.errorhandler(response, "editManagedVolume")
 
 
-def addVolumeOrganization(self, volumeId, organizationId):
+def addVolumeOrganization(self, volumeId, organizationId, permission):
     response = self.session.post(
         url = self.url, 
         headers = self.headers, 
@@ -149,12 +149,16 @@ def addVolumeOrganization(self, volumeId, organizationId):
             "operationName": "addVolumeOrganization",
             "variables": {
                 "volumeId": volumeId,
-                "organizationId": organizationId
+                "organizationId": organizationId,
+                "permission": permission
             },
             "query": """mutation 
-                addVolumeOrganization($volumeId: String!, $organizationId: String!) {
-                    addVolumeOrganization(volumeId: $volumeId, organizationId: $organizationId)
+                addVolumeOrganization($organizationId: String!, $permission: String!, $volumeId: String!) {
+                    addVolumeOrganization(organizationId: $organizationId, permission: $permission, volumeId: $volumeId)
                 }"""})
+    
+
+    
     return self.errorhandler(response, "addVolumeOrganization")
 
 

@@ -14,13 +14,11 @@ def get_analytics_types(self):
     return self.ana_api.getAnalyticsTypes()
 
 
-def get_analytics(self, datasetId, analyticsId, workspaceId=None):
+def get_analytics(self, analyticsId, workspaceId=None):
     """Retrieve information about analytics jobs. Images will get downloaded to current working directory if available. 
     
     Parameters
     ----------
-    datasetId : str
-        Dataset ID that the analytics job is associated with.
     analyticsId : str
         Job ID for an analytics job. 
     workspaceId: str
@@ -33,10 +31,9 @@ def get_analytics(self, datasetId, analyticsId, workspaceId=None):
     """
     import os, json, requests
     if self.check_logout(): return
-    if datasetId is None: raise ValueError("DatasetId must be provided.")
     if analyticsId is None: raise ValueError("AnalyticsId must be provided.")
     if workspaceId is None: workspaceId = self.workspace
-    result = self.ana_api.getAnalytics(workspaceId=workspaceId, datasetId=datasetId, analyticsId=analyticsId)
+    result = self.ana_api.getAnalytics(workspaceId=workspaceId, analyticsId=analyticsId)
     analytics_result = json.dumps(result)
     presigned_urls = [str for str in analytics_result.split("\\\"") if str.startswith("https")]
 

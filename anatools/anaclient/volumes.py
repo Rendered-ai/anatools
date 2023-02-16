@@ -110,7 +110,7 @@ def edit_managed_volume(self, volumeId, name=None, description=None):
     return self.ana_api.editManagedVolume(volumeId=volumeId, name=name, description=description)
 
 
-def add_volume_access(self, volumeId, organizationId):
+def add_volume_access(self, volumeId, organizationId, permission=None):
     """Add access to a volume for an organization.
     
     Parameters
@@ -119,6 +119,8 @@ def add_volume_access(self, volumeId, organizationId):
         VolumeId to add access for.
     organizationId : str
         Organization ID to add access
+    permission: str
+        Permission level to grant to organization. Choose from: read, write, or view.
     
     Returns
     -------
@@ -126,9 +128,10 @@ def add_volume_access(self, volumeId, organizationId):
         Status
     """
     if self.check_logout(): return
+    if permission is None: raise Exception("You must specify permission as either read, write, or view.")
     if organizationId is None: raise Exception('OrganizationId must be specified.')
     if volumeId is None: raise Exception('VolumeId must be specified.')
-    return self.ana_api.addVolumeOrganization(volumeId=volumeId, organizationId=organizationId)
+    return self.ana_api.addVolumeOrganization(volumeId=volumeId, organizationId=organizationId, permission=permission)
 
 
 def remove_volume_access(self, volumeId, organizationId):
@@ -217,7 +220,26 @@ def download_volume_data(self, volumeId, files=[], localDir=None, sync=False):
     if localDir is None: localDir = os.getcwd()
     if not os.path.exists(localDir): raise Exception(f"Could not find directory {localDir}.")
 
-    response = self.ana_api.getVolumeData(volumeId=volumeId, keys=files, dir=None)
+    response = []
+    condition = True
+    offset = 0
+
+    while condition:
+        result = self.ana_api.getVolumeData(volumeId=volumeId, keys=files, dir="", limit=100, offset=offset)
+        for fileinfo in result['keys']:
+            response.append({
+                'key':          fileinfo['key'],
+                'size':         fileinfo['size'],
+                'lastUpdated':  fileinfo['updatedAt'],
+                'hash':         fileinfo['hash'],
+                'url':          fileinfo['url'],
+            })
+        
+        if (result['pageInfo']['totalItems'] > offset + 100):
+            offset += 100
+        else:
+            condition = False
+    
     source_hashes = list(map((lambda x: x['key'] + x['hash']), response))
     destination_files = []
     destination_hashes = []
@@ -328,8 +350,28 @@ def upload_volume_data(self, volumeId, files=[], localDir=None, sync=False):
                     source_hashes.append(filepath + file_hash.hexdigest())
 
     if sync == True:
-        response = self.ana_api.getVolumeData(volumeId=volumeId, keys=files)
-        destination_hashes = list(map((lambda x: x['key'] + x['hash']), response))
+        response = []
+        condition = True
+        offset = 0
+
+        while condition:
+            result = self.ana_api.getVolumeData(volumeId=volumeId, keys=[], dir="", limit=100, offset=offset)
+            print("X", result, files)
+            for fileinfo in result['keys']:
+                response.append({
+                    'key':          fileinfo['key'],
+                    'size':         fileinfo['size'],
+                    'lastUpdated':  fileinfo['updatedAt'],
+                    'hash':         fileinfo['hash'],
+                    'url':          fileinfo['url'],
+                })
+            
+            if (result['pageInfo']['totalItems'] > offset + 100):
+                offset += 100
+            else:
+                condition = False
+
+        destination_hashes = list(map((lambda x: x['key'] + x['hash']), [file for file in response if file['size'] != 0]))
         delete_files = []
         for index, object in enumerate(response):
             if object['key'] not in source_files:

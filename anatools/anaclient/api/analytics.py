@@ -2,7 +2,7 @@
 Analytics API calls.
 """
 
-def getAnalytics(self, analyticsId, datasetId, workspaceId):
+def getAnalytics(self, analyticsId, workspaceId):
     response = self.session.post(
         url = self.url, 
         headers = self.headers, 
@@ -10,12 +10,11 @@ def getAnalytics(self, analyticsId, datasetId, workspaceId):
             "operationName": "getAnalytics",
             "variables": {
                 "workspaceId": workspaceId,
-                "datasetId": datasetId,
                 "analyticsId": analyticsId
             },
             "query": """query 
-                getAnalytics($workspaceId: String!, $datasetId: String!, $analyticsId: String!) {
-                    getAnalytics(workspaceId: $workspaceId, datasetId: $datasetId, analyticsId: $analyticsId){
+                getAnalytics($workspaceId: String!, $analyticsId: String!) {
+                    getAnalytics(workspaceId: $workspaceId, analyticsId: $analyticsId){
                         analyticsId
                         workspaceId
                         datasetId

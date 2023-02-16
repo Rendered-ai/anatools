@@ -177,48 +177,6 @@ def delete_gan_model(self, modelId):
     if modelId is None: raise Exception('ModelId must be specified.')
     return self.ana_api.deleteGANModel(modelId=modelId)
 
-
-def add_gan_access(self, modelId, targetOrganizationId):
-    """Adds access to a model for new organization; can only be done by a user in the organization that owns the model.
-    
-    Parameters
-    ----------
-    modelId : str
-        Id for the GAN model.
-    targetOrganizationId : str
-        Organization ID where the model is be granted access.
-    
-    Returns
-    -------
-    bool
-        Returns true if the GAN model was granted access.
-    """
-    if self.check_logout(): return
-    if modelId is None: raise ValueError("Model id must be provided.")
-    if targetOrganizationId is None: raise ValueError("Target organization id must be provided.")
-    return self.ana_api.addGANAccess(organizationId=targetOrganizationId, modelId=modelId)
-
-
-def remove_gan_access(self, modelId, targetOrganizationId):
-    """Removes access to a model for an that does not own the model.
-    
-    Parameters
-    ----------
-    modelId : str
-        Id for the GAN model.
-    targetOrganizationId : str
-        Organization ID where the model access is to be removed.
-    
-    Returns
-    -------
-    bool
-        Returns true if the GAN model access was removed.
-    """
-    if self.check_logout(): return
-    if modelId is None: raise ValueError("Model id must be provided.")
-    if targetOrganizationId is None: raise ValueError("Target organization id must be provided.")
-    return self.ana_api.removeGANAccess(organizationId=targetOrganizationId, modelId=modelId)
-
 def get_managed_gans(self, organizationId=None, modelId=None):
     """Retrieves the managed GANs for an organization.
     

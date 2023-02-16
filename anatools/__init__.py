@@ -16,4 +16,4 @@ View the `Introduction to Rendered.ai Documentation`_ to learn more.
 from .anaclient.anaclient import client
 from .annotations.annotations import annotations
 
-__version__ = '2.2.0.4'
+__version__ = '3.0.0'
